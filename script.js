@@ -19,7 +19,13 @@ You should NOT:
 - Discuss competitor brands in detail
 - Make claims beyond L'Oréal's official product information
 
-If asked about topics outside your scope, politely redirect the conversation back to L'Oréal products and beauty advice.`;
+IMPORTANT: If a user asks about topics completely unrelated to L'Oréal, beauty, skincare, haircare, or cosmetics (such as sports, politics, technology, math, etc.), you MUST politely decline and redirect them. Respond with something like: "I'm specialized in L'Oréal beauty products and skincare advice. I'd be happy to help you with product recommendations, skincare routines, or beauty tips instead! What beauty concern can I assist you with today?"
+
+Stay focused on your role as a L'Oréal beauty advisor at all times.`;
+
+//Replace with your actual Cloudflare Worker URL
+const CLOUD_FLARE_WORKER_URL =
+  "https://autobot-eagletron.brianlove-film.workers.dev/";
 
 /* Conversation history - stores all messages */
 const conversationHistory = [{ role: "system", content: systemPrompt }];
@@ -50,27 +56,27 @@ chatForm.addEventListener("submit", async (e) => {
   displayMessage("Thinking...", "ai");
 
   try {
-    // Send request to OpenAI's Chat Completions API
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Send request to Cloudflare Worker endpoint
+    const response = await fetch(CLOUD_FLARE_WORKER_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
         messages: conversationHistory,
-        temperature: 0.7,
       }),
     });
 
     // Check if the response is successful
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Response error:", response.status, errorText);
       throw new Error(`API error: ${response.status}`);
     }
 
     // Parse the response data
     const data = await response.json();
+    console.log("Response data:", data);
 
     // Get the AI's message from the response
     const aiMessage = data.choices[0].message.content;
@@ -88,6 +94,7 @@ chatForm.addEventListener("submit", async (e) => {
     // Display error message
     displayMessage("Sorry, I encountered an error. Please try again.", "ai");
     console.error("Error:", error);
+    console.error("Full error details:", error.message, error.stack);
   }
 });
 
