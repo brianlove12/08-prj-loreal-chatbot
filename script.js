@@ -12,6 +12,9 @@ You should:
 - Help customers find products suited to their skin type, concerns, and preferences
 - Share tips on how to use L'Oréal products effectively
 - Be friendly, professional, and knowledgeable about beauty and skincare
+- Remember details the user shares with you (like their name, skin type, concerns, preferences) throughout the conversation
+- Reference previous parts of the conversation naturally when relevant
+- Build upon earlier recommendations and questions to provide a cohesive experience
 
 You should NOT:
 - Answer questions unrelated to L'Oréal, beauty, skincare, or cosmetics
@@ -21,7 +24,7 @@ You should NOT:
 
 IMPORTANT: If a user asks about topics completely unrelated to L'Oréal, beauty, skincare, haircare, or cosmetics (such as sports, politics, technology, math, etc.), you MUST politely decline and redirect them. Respond with something like: "I'm specialized in L'Oréal beauty products and skincare advice. I'd be happy to help you with product recommendations, skincare routines, or beauty tips instead! What beauty concern can I assist you with today?"
 
-Stay focused on your role as a L'Oréal beauty advisor at all times.`;
+Stay focused on your role as a L'Oréal beauty advisor at all times. Maintain context throughout the conversation and personalize your responses based on what the user has already told you.`;
 
 //Replace with your actual Cloudflare Worker URL
 const CLOUD_FLARE_WORKER_URL =
@@ -45,6 +48,9 @@ chatForm.addEventListener("submit", async (e) => {
 
   // Add user message to conversation history
   conversationHistory.push({ role: "user", content: userMessage });
+
+  // Clear the chat window for the new exchange
+  chatWindow.innerHTML = "";
 
   // Display user message in chat window
   displayMessage(userMessage, "user");
@@ -100,10 +106,23 @@ chatForm.addEventListener("submit", async (e) => {
 
 /* Function to display a message in the chat window */
 function displayMessage(message, sender) {
-  // Create a new message element
+  // Create a message wrapper
   const messageElement = document.createElement("div");
   messageElement.classList.add("msg", sender);
-  messageElement.textContent = message;
+
+  // Create emoji icon
+  const iconElement = document.createElement("div");
+  iconElement.classList.add("msg-icon");
+  iconElement.textContent = sender === "user" ? "👤" : "🧴";
+
+  // Create message content bubble
+  const contentElement = document.createElement("div");
+  contentElement.classList.add("msg-content");
+  contentElement.textContent = message;
+
+  // Append icon and content to message wrapper
+  messageElement.appendChild(iconElement);
+  messageElement.appendChild(contentElement);
 
   // Add the message to the chat window
   chatWindow.appendChild(messageElement);
